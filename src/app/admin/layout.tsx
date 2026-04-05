@@ -92,13 +92,6 @@ export default function AdminLayout({
           </nav>
         </div>
 
-        {/* Demo mode notice */}
-        <div className="absolute bottom-4 left-4 right-4 md:left-0 md:right-auto md:w-60 p-3">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-            <p className="text-xs text-blue-600 font-medium">Demo Mode</p>
-            <p className="text-xs text-blue-500 mt-0.5">No database connected</p>
-          </div>
-        </div>
       </aside>
 
       {/* Mobile nav */}
