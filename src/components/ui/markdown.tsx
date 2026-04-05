@@ -4,6 +4,42 @@ import { useMemo } from "react";
 
 // Simple markdown to HTML renderer — handles common patterns
 function parseMarkdown(md: string): string {
+  // Extract subnote blocks (::: ... :::) before escaping
+  const subnoteBlocks: string[] = [];
+  md = md.replace(/^:::\s*\n([\s\S]*?)\n:::\s*$/gm, (_match, content: string) => {
+    const escaped = content
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    const lines = escaped.split("\n").map((line: string) => {
+      if (line.trim() === "") return "<br/>";
+      return `<span>${line}</span><br/>`;
+    }).join("");
+    const placeholder = `%%SUBNOTE_${subnoteBlocks.length}%%`;
+    subnoteBlocks.push(
+      `<aside class="my-6 border-l-2 border-muted-foreground/25 pl-4 text-muted-foreground/70 text-[0.85em] leading-relaxed">${lines}</aside>`
+    );
+    return placeholder;
+  });
+
+  // Extract centered verse/quote blocks (>>> ... >>>) before escaping
+  const verseBlocks: string[] = [];
+  md = md.replace(/^>>>\s*\n([\s\S]*?)\n>>>\s*$/gm, (_match, content: string) => {
+    const escaped = content
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    const lines = escaped.split("\n").map((line: string) => {
+      if (line.trim() === "") return "<br/>";
+      return `<span>${line}</span><br/>`;
+    }).join("");
+    const placeholder = `%%VERSE_${verseBlocks.length}%%`;
+    verseBlocks.push(
+      `<div class="my-6 text-center italic text-foreground/80 leading-relaxed">${lines}</div>`
+    );
+    return placeholder;
+  });
+
   let html = md
     // Escape HTML
     .replace(/&/g, "&amp;")
@@ -37,6 +73,16 @@ function parseMarkdown(md: string): string {
 
   // Clean up empty paragraphs
   html = html.replace(/<p class="[^"]*"><\/p>/g, "");
+
+  // Restore special blocks (check <p>-wrapped version first)
+  subnoteBlocks.forEach((block, i) => {
+    html = html.replace(new RegExp(`<p[^>]*>\\s*%%SUBNOTE_${i}%%\\s*</p>`), block);
+    html = html.replace(`%%SUBNOTE_${i}%%`, block);
+  });
+  verseBlocks.forEach((block, i) => {
+    html = html.replace(new RegExp(`<p[^>]*>\\s*%%VERSE_${i}%%\\s*</p>`), block);
+    html = html.replace(`%%VERSE_${i}%%`, block);
+  });
 
   return html;
 }

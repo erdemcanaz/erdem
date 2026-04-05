@@ -17,8 +17,9 @@ import { Markdown } from "@/components/ui/markdown";
 import Link from "next/link";
 
 const supportedModels = [
-  { name: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
-  { name: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  { name: "claude-opus-4-6", label: "Claude Opus 4.6" },
+  { name: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { name: "claude-haiku-4-5", label: "Claude Haiku 4.5" },
 ];
 
 interface Agent {
@@ -68,7 +69,7 @@ export default function PostAgentsPage({
       setRuns(runsData);
       const defaults: Record<string, string> = {};
       agentsData.forEach((a: Agent) => {
-        defaults[a.id] = "claude-sonnet-4-20250514";
+        defaults[a.id] = "claude-sonnet-4-6";
       });
       setSelectedModels(defaults);
       setLoading(false);
@@ -174,7 +175,7 @@ export default function PostAgentsPage({
                   </div>
                   <div className="flex items-center gap-3">
                     <Select
-                      value={selectedModels[agent.id] || "claude-sonnet-4-20250514"}
+                      value={selectedModels[agent.id] || "claude-sonnet-4-6"}
                       onValueChange={(value) => {
                         if (value) setSelectedModels((prev) => ({ ...prev, [agent.id]: value }));
                       }}

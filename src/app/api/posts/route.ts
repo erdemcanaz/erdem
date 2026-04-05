@@ -50,12 +50,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  // Ensure unique slug
+  let finalSlug = slug;
+  let suffix = 0;
+  while (true) {
+    const [existing] = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, finalSlug));
+    if (!existing) break;
+    suffix++;
+    finalSlug = `${slug}-${suffix}`;
+  }
+
   const now = new Date().toISOString();
 
   // Create post
   const [post] = await db.insert(posts).values({
     title,
-    slug,
+    slug: finalSlug,
     category,
     tags: tags ? JSON.stringify(tags) : null,
     isPublished: isPublished ?? false,

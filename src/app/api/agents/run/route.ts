@@ -42,7 +42,7 @@ ${version.summary ? `Summary: ${version.summary}` : ""}
 
 Provide your analysis in markdown format.`;
 
-  const model = modelName || "claude-sonnet-4-20250514";
+  const model = modelName || "claude-sonnet-4-6";
 
   try {
     const { text, usage } = await generateText({

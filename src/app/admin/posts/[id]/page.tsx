@@ -300,6 +300,19 @@ export default function PostEditorPage({
               disabled={!isViewingLatest}
               className={`font-mono text-sm leading-relaxed ${!isViewingLatest ? "opacity-60" : ""}`}
             />
+            {isViewingLatest && (
+              <div className="text-xs text-muted-foreground space-y-1.5">
+                <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
+                <p>
+                  <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
+                  {" "}— Centered verse/poem block (italic, centered)
+                </p>
+                <p>
+                  <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
+                  {" "}— Subnote block (grey sidebar, for personal comments)
+                </p>
+              </div>
+            )}
           </div>
 
           {/* References */}

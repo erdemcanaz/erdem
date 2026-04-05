@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { text } = await generateText({
-      model: anthropic("claude-haiku-4-5-20251001"),
+      model: anthropic("claude-haiku-4-5"),
       system: `You extract metadata from blog posts. Respond ONLY in valid JSON, nothing else. No markdown, no explanation.`,
       prompt: `Analyze this blog post and return a JSON object with:
 - "summary": a 1-2 sentence summary (max 200 chars)

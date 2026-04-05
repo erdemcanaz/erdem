@@ -5,6 +5,7 @@ import { db, initDB } from "@/db";
 import { posts, postVersions } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { VersionTimeline } from "@/components/posts/version-timeline";
+import { Markdown } from "@/components/ui/markdown";
 
 interface VersionPageProps {
   params: Promise<{ category: string; slug: string; version: string }>;
@@ -97,16 +98,7 @@ export default async function VersionPage({ params }: VersionPageProps) {
             </div>
           ) : (
             <div className="prose mt-8">
-              {thisVersion.contentMd.split("\n").map((line, i) => {
-                if (line.startsWith("### ")) return <h3 key={i}>{line.slice(4)}</h3>;
-                if (line.startsWith("## ")) return <h2 key={i}>{line.slice(3)}</h2>;
-                if (line.startsWith("# ")) return <h2 key={i}>{line.slice(2)}</h2>;
-                if (line.startsWith("- ")) return <li key={i}>{line.slice(2)}</li>;
-                if (line.startsWith("**") && line.endsWith("**"))
-                  return <p key={i}><strong>{line.slice(2, -2)}</strong></p>;
-                if (line.trim() === "") return <br key={i} />;
-                return <p key={i}>{line}</p>;
-              })}
+              <Markdown content={thisVersion.contentMd} />
             </div>
           )}
 

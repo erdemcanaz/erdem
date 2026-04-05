@@ -38,11 +38,28 @@ export default function NewPostPage() {
   const [references, setReferences] = useState<Reference[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState("");
+  const [slugTaken, setSlugTaken] = useState(false);
+  const [checkingSlug, setCheckingSlug] = useState(false);
+
+  const checkSlug = async (s: string) => {
+    if (!s.trim()) { setSlugTaken(false); return; }
+    setCheckingSlug(true);
+    try {
+      const res = await fetch(`/api/posts/check-slug?slug=${encodeURIComponent(s)}`);
+      const data = await res.json();
+      setSlugTaken(data.taken);
+    } catch {
+      setSlugTaken(false);
+    }
+    setCheckingSlug(false);
+  };
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
     if (!slug || slug === slugify(title)) {
-      setSlug(slugify(value));
+      const newSlug = slugify(value);
+      setSlug(newSlug);
+      checkSlug(newSlug);
     }
   };
 
@@ -166,9 +183,14 @@ export default function NewPostPage() {
                   id="slug"
                   placeholder="post-url-slug"
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="font-mono text-sm"
+                  onChange={(e) => { setSlug(e.target.value); checkSlug(e.target.value); }}
+                  className={`font-mono text-sm ${slugTaken ? "border-amber-400 focus-visible:ring-amber-400" : ""}`}
                 />
+                {slugTaken && (
+                  <p className="text-xs text-amber-600">
+                    This slug is already taken. A suffix will be added automatically if you continue.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -259,9 +281,17 @@ export default function NewPostPage() {
               rows={20}
               className="font-mono text-sm leading-relaxed"
             />
-            <p className="text-xs text-muted-foreground mt-2">
-              Supports Markdown: **bold**, *italic*, ## headings, [links](url), `code`, etc.
-            </p>
+            <div className="text-xs text-muted-foreground mt-3 space-y-1.5">
+              <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
+              <p>
+                <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
+                {" "}— Centered verse/poem block (italic, centered)
+              </p>
+              <p>
+                <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
+                {" "}— Subnote block (grey sidebar, for personal comments)
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
