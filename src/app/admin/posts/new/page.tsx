@@ -37,6 +37,7 @@ export default function NewPostPage() {
   const [saving, setSaving] = useState(false);
   const [references, setReferences] = useState<Reference[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
+  const [postDate, setPostDate] = useState("");
   const [error, setError] = useState("");
   const [slugTaken, setSlugTaken] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);
@@ -111,6 +112,7 @@ export default function NewPostPage() {
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
           references: references.filter((r) => r.label.trim()),
           isPublished: publish,
+          ...(postDate && { postDate }),
         }),
       });
 
@@ -208,6 +210,17 @@ export default function NewPostPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="post-date">Post Date (optional — defaults to now)</Label>
+              <Input
+                id="post-date"
+                type="date"
+                value={postDate}
+                onChange={(e) => setPostDate(e.target.value)}
+                className="w-48"
+              />
             </div>
 
             <div className="space-y-2">

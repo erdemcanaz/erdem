@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   initDB();
 
   const body = await request.json();
-  const { title, slug, category, summary, contentMd, tags, isPublished, references } = body;
+  const { title, slug, category, summary, contentMd, tags, isPublished, references, postDate } = body;
 
   if (!title || !slug || !category || !contentMd) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
   }
 
   const now = new Date().toISOString();
+  const dateToUse = postDate ? new Date(postDate).toISOString() : now;
 
   // Create post
   const [post] = await db.insert(posts).values({
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
     category,
     tags: tags ? JSON.stringify(tags) : null,
     isPublished: isPublished ?? false,
-    createdAt: now,
+    createdAt: dateToUse,
     updatedAt: now,
   }).returning();
 
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     contentMd,
     summary: summary || null,
     references: references ? JSON.stringify(references) : null,
-    publishedAt: now,
+    publishedAt: dateToUse,
   }).returning();
 
   return NextResponse.json({ post, version }, { status: 201 });
