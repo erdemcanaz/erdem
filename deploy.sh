@@ -4,14 +4,40 @@ set -e
 DOMAIN="ideas.erdemcanaz.com"
 CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 
-# Check .env.production exists
+# ── Pre-flight checks ──
+
 if [ ! -f .env.production ]; then
   echo "ERROR: .env.production not found."
   echo "Copy .env.example to .env.production and fill in your values."
   exit 1
 fi
 
-# Check if SSL cert already exists in the volume
+# Validate DNS points to this server
+echo "==> Checking DNS for $DOMAIN..."
+DNS_IP=$(dig +short "$DOMAIN" | tail -1)
+SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me)
+
+if [ -z "$DNS_IP" ]; then
+  echo "ERROR: Could not resolve $DOMAIN. Set an A record pointing to this server ($SERVER_IP)."
+  exit 1
+fi
+
+if [ "$DNS_IP" != "$SERVER_IP" ]; then
+  echo "ERROR: $DOMAIN resolves to $DNS_IP but this server is $SERVER_IP."
+  echo "Update your DNS A record to point to $SERVER_IP."
+  exit 1
+fi
+
+echo "==> DNS OK: $DOMAIN -> $DNS_IP"
+
+# ── Clean up any previous state ──
+
+echo "==> Stopping any running containers..."
+docker compose -f compose.yaml -f compose.init.yaml down 2>/dev/null || true
+docker compose down 2>/dev/null || true
+
+# ── Deploy ──
+
 CERT_EXISTS=$(docker run --rm -v erdem_certbot_certs:/etc/letsencrypt alpine sh -c "test -f $CERT_PATH && echo yes || echo no" 2>/dev/null || echo "no")
 
 if [ "$CERT_EXISTS" = "yes" ]; then
@@ -21,7 +47,6 @@ if [ "$CERT_EXISTS" = "yes" ]; then
 else
   echo "==> No SSL certificate found. Running initial setup..."
 
-  # Prompt for email
   read -rp "Email for Let's Encrypt notifications: " EMAIL
   if [ -z "$EMAIL" ]; then
     echo "ERROR: Email is required for Let's Encrypt."
@@ -32,7 +57,6 @@ else
   echo "==> Starting services with HTTP-only config..."
   docker compose -f compose.yaml -f compose.init.yaml up -d --build
 
-  # Wait for nginx to be ready
   echo "==> Waiting for nginx..."
   sleep 3
 
