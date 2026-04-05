@@ -203,6 +203,7 @@
 .animate-delay-200 { animation-delay: 200ms; }
 .animate-delay-300 { animation-delay: 300ms; }
 .animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
 
 /* Frontier icon: Galaxy ↔ Atom crossfade */
 @keyframes frontier-galaxy {

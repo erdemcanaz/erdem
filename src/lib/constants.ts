@@ -43,6 +43,5 @@ export const SITE = {
   description:
     "A personal platform where ideas are living documents. Posts evolve through versions, AI agents analyze them from multiple perspectives.",
   heroTitle: "Ideas evolve. So do I.",
-  heroSubtitle:
-    "Exploring the boundaries of thought and discovery. A space where ideas are living documents — versioned, analyzed, and refined over time.",
+  heroSubtitle: "",
 } as const;

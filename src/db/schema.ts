@@ -49,6 +49,15 @@ export const aiAgents = sqliteTable("ai_agents", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
+export const quotes = sqliteTable("quotes", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  text: text("text").notNull(),
+  author: text("author").notNull(),
+  translationEn: text("translation_en"), // optional English translation
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
 export const agentRuns = sqliteTable("agent_runs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   postVersionId: text("post_version_id").notNull().references(() => postVersions.id, { onDelete: "cascade" }),
