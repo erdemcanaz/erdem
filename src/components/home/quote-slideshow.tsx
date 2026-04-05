@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 interface Quote {
   id: string;
@@ -22,6 +22,8 @@ export default function QuoteSlideshow() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const isTransitioning = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch("/api/quotes")
@@ -34,28 +36,51 @@ export default function QuoteSlideshow() {
       .catch(() => {});
   }, []);
 
-  const advance = useCallback(() => {
+  const goTo = useCallback((nextIndex: number) => {
+    if (isTransitioning.current) return;
+    if (nextIndex === currentIndex) return;
+    isTransitioning.current = true;
     setIsVisible(false);
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % quotes.length);
+      setCurrentIndex(nextIndex);
       setIsVisible(true);
-    }, 600);
-  }, [quotes.length]);
+      isTransitioning.current = false;
+    }, 800);
+  }, [currentIndex]);
+
+  const advance = useCallback(() => {
+    goTo((currentIndex + 1) % quotes.length);
+  }, [currentIndex, quotes.length, goTo]);
+
+  // Auto-advance timer with reset capability
+  const resetTimer = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (quotes.length <= 1) return;
+    intervalRef.current = setInterval(() => {
+      advance();
+    }, 8000);
+  }, [quotes.length, advance]);
 
   useEffect(() => {
+    resetTimer();
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [resetTimer]);
+
+  const handleClick = () => {
     if (quotes.length <= 1) return;
-    const interval = setInterval(advance, 8000);
-    return () => clearInterval(interval);
-  }, [quotes.length, advance]);
+    advance();
+    resetTimer();
+  };
 
   if (quotes.length === 0) return null;
 
   const quote = quotes[currentIndex];
 
   return (
-    <div className="w-full max-w-[700px] mx-auto px-6 py-8 min-h-[140px] flex flex-col items-center justify-center">
+    <div className="w-full max-w-[700px] mx-auto px-6 pt-4 pb-8 min-h-[140px] flex flex-col items-center justify-center">
       <div
-        className={`text-center transition-opacity duration-500 ${
+        onClick={handleClick}
+        className={`text-center cursor-pointer select-none transition-opacity duration-700 ease-in-out ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
