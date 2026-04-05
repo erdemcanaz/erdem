@@ -3,6 +3,7 @@ import { CATEGORIES, type CategorySlug, AGENT_COLORS } from "@/lib/constants";
 import { db, initDB } from "@/db";
 import { posts, postVersions, agentRuns, aiAgents } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { seedAgents } from "@/db/seed";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { VersionTimeline } from "@/components/posts/version-timeline";
@@ -21,6 +22,7 @@ export default async function PostPage({ params }: PostPageProps) {
   if (!cat) notFound();
 
   initDB();
+  await seedAgents();
 
   const [post] = await db
     .select()
