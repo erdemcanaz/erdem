@@ -16,6 +16,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORIES } from "@/lib/constants";
 import { ReferencesEditor, type Reference } from "@/components/admin/references-editor";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Markdown } from "@/components/ui/markdown";
 
 function slugify(text: string): string {
   return text
@@ -284,27 +286,44 @@ export default function NewPostPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Content (Markdown)</CardTitle>
+            <CardTitle className="text-base">Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="Write your post in Markdown..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={20}
-              className="font-mono text-sm leading-relaxed"
-            />
-            <div className="text-xs text-muted-foreground mt-3 space-y-1.5">
-              <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
-              <p>
-                <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
-                {" "}— Centered verse/poem block (italic, centered)
-              </p>
-              <p>
-                <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
-                {" "}— Subnote block (grey sidebar, for personal comments)
-              </p>
-            </div>
+            <Tabs defaultValue="write">
+              <TabsList>
+                <TabsTrigger value="write">Write</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+              </TabsList>
+              <TabsContent value="write">
+                <Textarea
+                  placeholder="Write your post in Markdown..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={20}
+                  className="font-mono text-sm leading-relaxed mt-3"
+                />
+                <div className="text-xs text-muted-foreground mt-3 space-y-1.5">
+                  <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
+                  <p>
+                    <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
+                    {" "}— Centered verse/poem block (italic, centered)
+                  </p>
+                  <p>
+                    <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
+                    {" "}— Subnote block (grey sidebar, for personal comments)
+                  </p>
+                </div>
+              </TabsContent>
+              <TabsContent value="preview">
+                <div className="prose mt-3 min-h-[200px] rounded-lg border border-border p-6">
+                  {content.trim() ? (
+                    <Markdown content={content} />
+                  ) : (
+                    <p className="text-muted-foreground italic">Nothing to preview yet.</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

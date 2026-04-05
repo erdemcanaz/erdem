@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CATEGORIES, type CategorySlug } from "@/lib/constants";
 import { ReferencesEditor, type Reference } from "@/components/admin/references-editor";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Markdown } from "@/components/ui/markdown";
 import Link from "next/link";
 
 interface Version {
@@ -292,25 +294,45 @@ export default function PostEditorPage({
           </div>
 
           <div className="space-y-2">
-            <Label>Markdown Content</Label>
-            <Textarea
-              value={isViewingLatest ? content : viewingVersion?.contentMd || ""}
-              onChange={(e) => setContent(e.target.value)}
-              rows={16}
-              disabled={!isViewingLatest}
-              className={`font-mono text-sm leading-relaxed ${!isViewingLatest ? "opacity-60" : ""}`}
-            />
-            {isViewingLatest && (
-              <div className="text-xs text-muted-foreground space-y-1.5">
-                <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
-                <p>
-                  <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
-                  {" "}— Centered verse/poem block (italic, centered)
-                </p>
-                <p>
-                  <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
-                  {" "}— Subnote block (grey sidebar, for personal comments)
-                </p>
+            <Label>Content</Label>
+            {isViewingLatest ? (
+              <Tabs defaultValue="write">
+                <TabsList>
+                  <TabsTrigger value="write">Write</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+                <TabsContent value="write">
+                  <Textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={16}
+                    className="font-mono text-sm leading-relaxed mt-3"
+                  />
+                  <div className="text-xs text-muted-foreground mt-3 space-y-1.5">
+                    <p>**bold**, *italic*, ## headings, - lists, `code`, --- horizontal rule</p>
+                    <p>
+                      <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{">>>"}</code>
+                      {" "}— Centered verse/poem block (italic, centered)
+                    </p>
+                    <p>
+                      <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code> ... <code className="bg-muted px-1 py-0.5 rounded font-mono">{":::"}</code>
+                      {" "}— Subnote block (grey sidebar, for personal comments)
+                    </p>
+                  </div>
+                </TabsContent>
+                <TabsContent value="preview">
+                  <div className="prose mt-3 min-h-[200px] rounded-lg border border-border p-6">
+                    {content.trim() ? (
+                      <Markdown content={content} />
+                    ) : (
+                      <p className="text-muted-foreground italic">Nothing to preview yet.</p>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="prose rounded-lg border border-border p-6 opacity-60">
+                <Markdown content={viewingVersion?.contentMd || ""} />
               </div>
             )}
           </div>
