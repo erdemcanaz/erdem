@@ -39,7 +39,7 @@ export const AGENT_COLORS: Record<string, string> = {
 
 export const SITE = {
   name: "Erdem",
-  title: "Erdem — Ideas Evolve",
+  title: "Erdem's Space",
   description:
     "A personal platform where ideas are living documents. Posts evolve through versions, AI agents analyze them from multiple perspectives.",
   heroTitle: "Ideas evolve. So do I.",
