@@ -1,0 +1,6 @@
+# Override: use HTTP-only nginx config for initial SSL certificate issuance
+services:
+  nginx:
+    volumes:
+      - ./nginx/nginx.init.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_www:/var/www/certbot:ro
