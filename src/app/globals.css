@@ -46,10 +46,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom colors for the site */
+  --color-page-bg: #F5F5F5;
+  --color-agent-economic: #F59E0B;
+  --color-agent-social: #8B5CF6;
+  --color-agent-technical: #06B6D4;
+  --color-agent-scientific: #10B981;
+  --color-agent-summary: #3B82F6;
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.97 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -72,7 +80,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -125,6 +133,105 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
   }
+}
+
+/* Prose styles for markdown content */
+.prose h2 {
+  @apply text-2xl font-semibold mt-10 mb-4 text-foreground;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold mt-8 mb-3 text-foreground;
+}
+
+.prose p {
+  @apply mb-6 leading-relaxed text-foreground/90;
+}
+
+.prose a {
+  @apply text-blue-500 hover:underline;
+}
+
+.prose blockquote {
+  @apply border-l-3 border-blue-500 pl-4 italic text-muted-foreground my-6;
+}
+
+.prose pre {
+  @apply bg-muted rounded-lg p-4 overflow-x-auto my-6 font-mono text-sm;
+}
+
+.prose code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose ul, .prose ol {
+  @apply mb-6 pl-6;
+}
+
+.prose li {
+  @apply mb-2 leading-relaxed;
+}
+
+.prose img {
+  @apply rounded-lg max-w-full my-6;
+}
+
+/* Fade-in animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+
+/* Frontier icon: Galaxy ↔ Atom crossfade */
+@keyframes frontier-galaxy {
+  0%, 10%   { opacity: 1; }
+  35%, 65%  { opacity: 0; }
+  90%, 100% { opacity: 1; }
+}
+
+@keyframes frontier-atom {
+  0%, 10%   { opacity: 0; }
+  35%, 65%  { opacity: 1; }
+  90%, 100% { opacity: 0; }
+}
+
+@keyframes frontier-core-glow {
+  0%, 100%  { r: 5; opacity: 0.15; }
+  25%       { r: 7; opacity: 0.3; }
+  50%       { r: 4; opacity: 0.25; }
+  75%       { r: 7; opacity: 0.3; }
+}
+
+.animate-frontier-galaxy {
+  animation: frontier-galaxy 8s ease-in-out infinite;
+}
+
+.animate-frontier-atom {
+  animation: frontier-atom 8s ease-in-out infinite;
+}
+
+.animate-frontier-core-glow {
+  animation: frontier-core-glow 8s ease-in-out infinite;
 }
