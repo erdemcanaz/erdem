@@ -42,6 +42,7 @@ export function initDB() {
       content_md TEXT NOT NULL,
       summary TEXT,
       change_note TEXT,
+      "references" TEXT,
       published_at TEXT NOT NULL,
       is_deleted INTEGER NOT NULL DEFAULT 0,
       UNIQUE(post_id, version_number)
@@ -87,4 +88,11 @@ export function initDB() {
       is_visible INTEGER NOT NULL DEFAULT 1
     );
   `);
+
+  // Migration: add references column to existing DBs
+  try {
+    sqlite.exec(`ALTER TABLE post_versions ADD COLUMN "references" TEXT;`);
+  } catch {
+    // Column already exists
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AGENT_COLORS } from "@/lib/constants";
+import { Markdown } from "@/components/ui/markdown";
 import Link from "next/link";
 
 const supportedModels = [
@@ -26,7 +27,6 @@ interface Agent {
   displayName: string;
   perspective: string;
   description: string | null;
-  isActive: boolean;
 }
 
 interface AgentRun {
@@ -50,19 +50,28 @@ export default function PostAgentsPage({
   const [runningAgents, setRunningAgents] = useState<Set<string>>(new Set());
   const [runningAll, setRunningAll] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const loadRuns = useCallback(async () => {
+    const runsData = await fetch(`/api/posts/${id}/runs`).then((r) => r.json());
+    setRuns(runsData);
+  }, [id]);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/agents").then((r) => r.json()),
       fetch(`/api/posts/${id}`).then((r) => r.json()),
-    ]).then(([agentsData, postData]) => {
+      fetch(`/api/posts/${id}/runs`).then((r) => r.json()),
+    ]).then(([agentsData, postData, runsData]) => {
       setAgents(agentsData);
       setPost(postData);
+      setRuns(runsData);
       const defaults: Record<string, string> = {};
       agentsData.forEach((a: Agent) => {
         defaults[a.id] = "claude-sonnet-4-20250514";
       });
       setSelectedModels(defaults);
+      setLoading(false);
     });
   }, [id]);
 
@@ -88,8 +97,8 @@ export default function PostAgentsPage({
         const data = await res.json();
         setError(data.error || "Agent run failed");
       } else {
-        const run = await res.json();
-        setRuns((prev) => [...prev.filter((r) => r.agentId !== agentId), run]);
+        // Reload all runs from DB to stay in sync
+        await loadRuns();
       }
     } catch {
       setError("Failed to run agent. Check your ANTHROPIC_API_KEY in .env.local");
@@ -114,6 +123,10 @@ export default function PostAgentsPage({
     }
     setRunningAll(false);
   };
+
+  if (loading) {
+    return <div className="p-8 text-muted-foreground">Loading...</div>;
+  }
 
   return (
     <div>
@@ -155,6 +168,9 @@ export default function PostAgentsPage({
                   <div className="flex items-center gap-3">
                     <CardTitle className="text-base">{agent.displayName}</CardTitle>
                     <Badge variant="secondary" className="text-xs">{agent.perspective}</Badge>
+                    {run && (
+                      <Badge variant="outline" className="text-xs">{run.modelName}</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Select
@@ -173,7 +189,7 @@ export default function PostAgentsPage({
                       </SelectContent>
                     </Select>
                     <Button size="sm" variant="outline" onClick={() => handleRunAgent(agent.id)} disabled={isRunning}>
-                      {isRunning ? "Running..." : "Run"}
+                      {isRunning ? "Running..." : run ? "Re-run" : "Run"}
                     </Button>
                   </div>
                 </div>
@@ -184,12 +200,11 @@ export default function PostAgentsPage({
                 <CardContent className="pt-0">
                   <div className="bg-muted/50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="outline" className="text-xs">{run.modelName}</Badge>
                       <span className="text-xs text-muted-foreground">
                         {new Date(run.generatedAt).toLocaleString()}
                       </span>
                     </div>
-                    <div className="prose text-sm whitespace-pre-wrap">{run.contentMd}</div>
+                    <Markdown content={run.contentMd} />
                   </div>
                 </CardContent>
               )}

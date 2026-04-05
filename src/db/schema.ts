@@ -21,6 +21,7 @@ export const postVersions = sqliteTable("post_versions", {
   contentMd: text("content_md").notNull(),
   summary: text("summary"),
   changeNote: text("change_note"),
+  references: text("references"), // JSON array of {label, url}
   publishedAt: text("published_at").notNull().$defaultFn(() => new Date().toISOString()),
   isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
 });

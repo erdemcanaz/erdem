@@ -17,7 +17,7 @@ export async function POST(
   initDB();
   const { id } = await params;
   const body = await request.json();
-  const { title, contentMd, summary, changeNote } = body;
+  const { title, contentMd, summary, changeNote, references } = body;
 
   if (!contentMd) {
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
@@ -47,6 +47,7 @@ export async function POST(
     contentMd,
     summary: summary || null,
     changeNote: changeNote || null,
+    references: references ? JSON.stringify(references) : null,
     publishedAt: now,
   }).returning();
 

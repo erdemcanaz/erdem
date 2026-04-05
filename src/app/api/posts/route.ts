@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   initDB();
 
   const body = await request.json();
-  const { title, slug, category, summary, contentMd, tags, isPublished } = body;
+  const { title, slug, category, summary, contentMd, tags, isPublished, references } = body;
 
   if (!title || !slug || !category || !contentMd) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
     title,
     contentMd,
     summary: summary || null,
+    references: references ? JSON.stringify(references) : null,
     publishedAt: now,
   }).returning();
 

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORIES } from "@/lib/constants";
+import { ReferencesEditor, type Reference } from "@/components/admin/references-editor";
 
 function slugify(text: string): string {
   return text
@@ -34,6 +35,8 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [saving, setSaving] = useState(false);
+  const [references, setReferences] = useState<Reference[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleTitleChange = (value: string) => {
@@ -41,6 +44,37 @@ export default function NewPostPage() {
     if (!slug || slug === slugify(title)) {
       setSlug(slugify(value));
     }
+  };
+
+  const handleAiGenerate = async () => {
+    if (!content.trim()) {
+      setError("Write some content first so AI can analyze it.");
+      return;
+    }
+    setAiLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/ai/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "AI generation failed");
+        setAiLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.summary) setSummary(data.summary);
+      if (data.tags?.length) setTags(data.tags.join(", "));
+    } catch {
+      setError("AI generation failed. Check your ANTHROPIC_API_KEY.");
+    }
+    setAiLoading(false);
   };
 
   const handleSave = async (publish: boolean) => {
@@ -58,6 +92,7 @@ export default function NewPostPage() {
           summary,
           contentMd: content,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+          references: references.filter((r) => r.label.trim()),
           isPublished: publish,
         }),
       });
@@ -154,7 +189,34 @@ export default function NewPostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="summary">Summary</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="summary">Summary</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-blue-500 hover:text-blue-600"
+                  onClick={handleAiGenerate}
+                  disabled={aiLoading || !content.trim()}
+                >
+                  {aiLoading ? (
+                    <>
+                      <svg className="w-3 h-3 mr-1.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3 h-3 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                      </svg>
+                      Auto-generate summary &amp; tags
+                    </>
+                  )}
+                </Button>
+              </div>
               <Textarea
                 id="summary"
                 placeholder="A brief summary of this post..."
@@ -173,6 +235,15 @@ export default function NewPostPage() {
                 onChange={(e) => setTags(e.target.value)}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">References & Inspirations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReferencesEditor references={references} onChange={setReferences} />
           </CardContent>
         </Card>
 

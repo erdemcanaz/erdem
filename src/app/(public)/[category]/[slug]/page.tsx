@@ -95,6 +95,36 @@ export default async function PostPage({ params }: PostPageProps) {
               return <p key={i}>{line}</p>;
             })}
           </div>
+          {/* References */}
+          {(() => {
+            const refs = latestNonDeleted.references ? JSON.parse(latestNonDeleted.references) : [];
+            if (refs.length === 0) return null;
+            return (
+              <div className="mt-10 pt-6 border-t border-border">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground mb-4">
+                  References & Inspirations
+                </h3>
+                <ul className="space-y-2">
+                  {refs.map((ref: { label: string; url: string }, i: number) => (
+                    <li key={i} className="text-sm text-foreground/80">
+                      {ref.url ? (
+                        <a
+                          href={ref.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {ref.label}
+                        </a>
+                      ) : (
+                        ref.label
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Agent Commentaries */}

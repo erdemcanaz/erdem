@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CATEGORIES, type CategorySlug } from "@/lib/constants";
+import { ReferencesEditor, type Reference } from "@/components/admin/references-editor";
 import Link from "next/link";
 
 interface Version {
@@ -19,6 +20,7 @@ interface Version {
   contentMd: string;
   summary: string | null;
   changeNote: string | null;
+  references: string | null;
   publishedAt: string;
   isDeleted: boolean;
 }
@@ -44,7 +46,9 @@ export default function PostEditorPage({
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
   const [changeNote, setChangeNote] = useState("");
+  const [references, setReferences] = useState<Reference[]>([]);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState(0);
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export default function PostEditorPage({
           const latest = data.versions[0]; // sorted desc
           setContent(latest.contentMd);
           setSummary(latest.summary || "");
+          setReferences(latest.references ? JSON.parse(latest.references) : []);
           setSelectedVersion(latest.versionNumber);
         }
         setLoading(false);
@@ -81,6 +86,7 @@ export default function PostEditorPage({
         contentMd: content,
         summary,
         changeNote,
+        references: references.filter((r) => r.label.trim()),
       }),
     });
 
@@ -246,7 +252,36 @@ export default function PostEditorPage({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Summary</Label>
+            <div className="flex items-center justify-between">
+              <Label>Summary</Label>
+              {isViewingLatest && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-blue-500 hover:text-blue-600"
+                  onClick={async () => {
+                    if (!content.trim()) return;
+                    setAiLoading(true);
+                    try {
+                      const res = await fetch("/api/ai/summarize", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title: post.title, content }),
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        if (data.summary) setSummary(data.summary);
+                      }
+                    } catch { /* ignore */ }
+                    setAiLoading(false);
+                  }}
+                  disabled={aiLoading || !content.trim()}
+                >
+                  {aiLoading ? "Generating..." : "Auto-generate with AI"}
+                </Button>
+              )}
+            </div>
             <Textarea
               value={isViewingLatest ? summary : viewingVersion?.summary || ""}
               onChange={(e) => setSummary(e.target.value)}
@@ -265,6 +300,25 @@ export default function PostEditorPage({
               disabled={!isViewingLatest}
               className={`font-mono text-sm leading-relaxed ${!isViewingLatest ? "opacity-60" : ""}`}
             />
+          </div>
+
+          {/* References */}
+          <div className="space-y-2">
+            <Label>References & Inspirations</Label>
+            {isViewingLatest ? (
+              <ReferencesEditor references={references} onChange={setReferences} />
+            ) : (
+              (() => {
+                const vRefs = viewingVersion?.references ? JSON.parse(viewingVersion.references) : [];
+                return vRefs.length > 0 ? (
+                  <ul className="text-sm text-muted-foreground space-y-1 opacity-60">
+                    {vRefs.map((r: { label: string; url: string }, i: number) => (
+                      <li key={i}>{r.label}{r.url ? ` — ${r.url}` : ""}</li>
+                    ))}
+                  </ul>
+                ) : <p className="text-xs text-muted-foreground opacity-60">No references</p>;
+              })()
+            )}
           </div>
 
           {isViewingLatest && (
