@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sop-app
+    container_name: erdem-app
     restart: unless-stopped
     env_file: .env.production
     volumes:
